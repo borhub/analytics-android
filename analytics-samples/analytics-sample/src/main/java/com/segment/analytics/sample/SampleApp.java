@@ -23,6 +23,7 @@ public class SampleApp extends Application {
     // Initialize a new instance of the Analytics client.
     Analytics.Builder builder =
         new Analytics.Builder(this, ANALYTICS_WRITE_KEY)
+            .flushQueueSize(1)
             .trackApplicationLifecycleEvents()
             .trackAttributionInformation()
             .recordScreenViews();

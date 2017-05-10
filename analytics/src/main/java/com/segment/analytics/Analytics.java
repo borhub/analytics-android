@@ -817,6 +817,7 @@ public class Analytics {
       default:
         throw new AssertionError("unknown type " + payload.type());
     }
+    // gets here fine, but Segment event is neither sent immediately to the network nor persisted (for sending on next app start)
     HANDLER.post(
         new Runnable() {
           @Override

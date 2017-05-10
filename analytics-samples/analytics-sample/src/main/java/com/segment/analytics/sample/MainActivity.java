@@ -31,6 +31,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -39,6 +40,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.segment.analytics.Analytics;
+import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.EmptyStackException;
+
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MainActivity extends Activity {
@@ -56,11 +60,30 @@ public class MainActivity extends Activity {
 
     setContentView(R.layout.activity_main);
     ButterKnife.bind(this);
+
+    final Thread.UncaughtExceptionHandler oldHandler = Thread.getDefaultUncaughtExceptionHandler();
+
+    Thread.setDefaultUncaughtExceptionHandler(
+      new Thread.UncaughtExceptionHandler() {
+        @Override
+        public void uncaughtException(Thread paramThread, Throwable paramThrowable) {
+          Log.e("Alert","This is my ExceptionHandler from which I want to send the crash information to Segment.io");
+
+          // This "crash log" event never makes it to Segment despite queue length 0 and not even after app starts again.
+          Analytics.with(getApplicationContext()).track("Crash - after Button A Clicked");
+
+          if (oldHandler != null) {
+            oldHandler.uncaughtException(paramThread, paramThrowable);
+          } else {
+            System.exit(2); //Prevents the service/app from freezing
+          }
+        }
+      });
   }
 
   @OnClick(R.id.action_track_a)
   void onButtonAClicked() {
-    Analytics.with(this).track("Button A Clicked");
+    throw new EmptyStackException();
   }
 
   @OnClick(R.id.action_track_b)
